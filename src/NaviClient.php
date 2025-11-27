@@ -44,7 +44,7 @@ use Psr\Http\Message\ResponseInterface;
 class NaviClient
 {
     private const DEFAULT_BASE_URL = 'http://localhost:3000';
-    private const API_PATH = '/api/v1/integration';
+    private const DEFAULT_API_PATH = '/api/integration';
     private const DEFAULT_TIMEOUT = 30;
     private const STREAM_TIMEOUT = 300; // 5 minutes for streaming
 
@@ -67,6 +67,7 @@ class NaviClient
      * @param string $apiKey Your Navi API key (starts with navi_sk_)
      * @param array{
      *     base_url?: string,
+     *     api_path?: string,
      *     timeout?: int,
      *     verify_ssl?: bool,
      *     http_client?: Client
@@ -79,7 +80,8 @@ class NaviClient
         $this->validateApiKey($apiKey);
 
         $baseUrl = rtrim($options['base_url'] ?? self::DEFAULT_BASE_URL, '/');
-        $this->baseUrl = $baseUrl . self::API_PATH;
+        $apiPath = $options['api_path'] ?? self::DEFAULT_API_PATH;
+        $this->baseUrl = $baseUrl . $apiPath;
 
         // Create HTTP client with middleware
         if (isset($options['http_client'])) {

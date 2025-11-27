@@ -61,7 +61,8 @@ $navi->conversations->close($conversation->id);
 ```php
 $navi = new NaviClient('navi_sk_your_api_key', [
     'base_url' => 'https://your-navi-instance.com',  // Required
-    'timeout' => 30,                                   // Request timeout in seconds
+    'api_path' => '/api/integration',                 // API path (default: /api/integration)
+    'timeout' => 30,                                  // Request timeout in seconds
     'verify_ssl' => true,                             // SSL verification
 ]);
 ```
