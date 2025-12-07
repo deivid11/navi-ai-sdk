@@ -82,6 +82,7 @@ class NaviClient
         $baseUrl = rtrim($options['base_url'] ?? self::DEFAULT_BASE_URL, '/');
         $apiPath = $options['api_path'] ?? self::DEFAULT_API_PATH;
         $this->baseUrl = $baseUrl . $apiPath;
+        $verifySsl = $options['verify_ssl'] ?? true;
 
         // Create HTTP client with middleware
         if (isset($options['http_client'])) {
@@ -101,7 +102,7 @@ class NaviClient
                 'handler' => $stack,
                 'timeout' => $options['timeout'] ?? self::DEFAULT_TIMEOUT,
                 'read_timeout' => self::STREAM_TIMEOUT,
-                'verify' => $options['verify_ssl'] ?? true,
+                'verify' => $verifySsl,
                 'headers' => [
                     'Content-Type' => 'application/json',
                     'Accept' => 'application/json',
@@ -110,8 +111,8 @@ class NaviClient
             ]);
         }
 
-        // Initialize resources
-        $this->conversations = new Conversations($this->httpClient, $this->baseUrl);
+        // Initialize resources with API key for curl-based streaming
+        $this->conversations = new Conversations($this->httpClient, $this->baseUrl, $apiKey, $verifySsl);
         $this->agents = new Agents($this->httpClient, $this->baseUrl);
     }
 

@@ -14,6 +14,7 @@ use Navi\Models\ChatResponse;
 use Navi\Models\Conversation;
 use Navi\Models\MessagesPage;
 use Navi\Models\StreamEvent;
+use Navi\Streaming\CurlStreamingClient;
 use Navi\Streaming\SSEHandler;
 
 /**
@@ -21,10 +22,19 @@ use Navi\Streaming\SSEHandler;
  */
 class Conversations
 {
+    private ?CurlStreamingClient $streamingClient = null;
+
     public function __construct(
         private readonly Client $client,
         private readonly string $baseUrl,
-    ) {}
+        private readonly ?string $apiKey = null,
+        private readonly bool $verifySsl = true,
+    ) {
+        // Initialize curl streaming client if API key is provided
+        if ($this->apiKey !== null) {
+            $this->streamingClient = new CurlStreamingClient($this->apiKey, $this->verifySsl);
+        }
+    }
 
     /**
      * Create a new conversation.
@@ -91,6 +101,9 @@ class Conversations
     /**
      * Send a message and receive streaming response via callback.
      *
+     * This method uses curl directly with CURLOPT_WRITEFUNCTION for true
+     * real-time streaming, avoiding Guzzle's potential buffering issues.
+     *
      * @param callable(StreamEvent): void $callback Called for each stream event
      * @param array{
      *     context?: array<string, mixed>,
@@ -125,6 +138,23 @@ class Conversations
 
         $url = $this->baseUrl . "/conversations/{$conversationId}/chat";
 
+        // Use curl streaming client for true real-time streaming
+        if ($this->streamingClient !== null) {
+            $this->streamingClient->stream($url, $body, $callback);
+            return;
+        }
+
+        // Fallback to Guzzle-based streaming (may buffer)
+        $this->chatWithGuzzle($url, $body, $callback);
+    }
+
+    /**
+     * Fallback Guzzle-based streaming (may buffer entire response).
+     *
+     * @param callable(StreamEvent): void $callback
+     */
+    private function chatWithGuzzle(string $url, array $body, callable $callback): void
+    {
         try {
             $response = $this->client->post($url, [
                 'json' => $body,
@@ -158,6 +188,9 @@ class Conversations
     /**
      * Send a message and receive streaming response as a generator.
      *
+     * This method uses curl directly with CURLOPT_WRITEFUNCTION for true
+     * real-time streaming, avoiding Guzzle's potential buffering issues.
+     *
      * @param array{
      *     context?: array<string, mixed>,
      *     runtimeParams?: array<string, mixed>
@@ -179,6 +212,23 @@ class Conversations
 
         $url = $this->baseUrl . "/conversations/{$conversationId}/chat";
 
+        // Use curl streaming client for true real-time streaming
+        if ($this->streamingClient !== null) {
+            yield from $this->streamingClient->streamGenerator($url, $body);
+            return;
+        }
+
+        // Fallback to Guzzle-based streaming (may buffer)
+        yield from $this->chatStreamWithGuzzle($url, $body);
+    }
+
+    /**
+     * Fallback Guzzle-based streaming generator (may buffer entire response).
+     *
+     * @return Generator<StreamEvent>
+     */
+    private function chatStreamWithGuzzle(string $url, array $body): Generator
+    {
         try {
             $response = $this->client->post($url, [
                 'json' => $body,
