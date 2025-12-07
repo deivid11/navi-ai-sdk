@@ -26,14 +26,18 @@ class SSEHandler
         stream_set_read_buffer($stream, 0);
 
         while (!feof($stream)) {
-            // Use fgets() for line-based reading - SSE is a line protocol
-            // This returns immediately when a newline is received
-            $line = fgets($stream);
-            if ($line === false) {
-                break;
+            // Use fread() with small chunks for more immediate delivery
+            // fgets() waits for newlines, but fread() returns as soon as data is available
+            $chunk = fread($stream, 256);
+            if ($chunk === false || $chunk === '') {
+                // Small sleep to prevent CPU spinning on empty reads
+                if (!feof($stream)) {
+                    usleep(1000); // 1ms
+                }
+                continue;
             }
 
-            yield from $this->processChunk($line);
+            yield from $this->processChunk($chunk);
         }
 
         // Process any remaining data in buffer

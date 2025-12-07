@@ -131,6 +131,12 @@ class Conversations
                 'stream' => true,
                 'headers' => [
                     'Accept' => 'text/event-stream',
+                    'Cache-Control' => 'no-cache',
+                ],
+                // Optimize cURL for real-time streaming
+                'curl' => [
+                    CURLOPT_BUFFERSIZE => 128,        // Small buffer for immediate delivery
+                    CURLOPT_TCP_NODELAY => true,      // Disable Nagle's algorithm
                 ],
             ]);
 
@@ -138,6 +144,10 @@ class Conversations
             if ($stream === null) {
                 throw new NaviException('Failed to get response stream');
             }
+
+            // Optimize stream for real-time reading
+            stream_set_blocking($stream, true);
+            stream_set_read_buffer($stream, 0);
 
             $handler = new SSEHandler();
             foreach ($handler->parseStream($stream) as $event) {
@@ -185,6 +195,12 @@ class Conversations
                 'stream' => true,
                 'headers' => [
                     'Accept' => 'text/event-stream',
+                    'Cache-Control' => 'no-cache',
+                ],
+                // Optimize cURL for real-time streaming
+                'curl' => [
+                    CURLOPT_BUFFERSIZE => 128,        // Small buffer for immediate delivery
+                    CURLOPT_TCP_NODELAY => true,      // Disable Nagle's algorithm
                 ],
             ]);
 
@@ -192,6 +208,10 @@ class Conversations
             if ($stream === null) {
                 throw new NaviException('Failed to get response stream');
             }
+
+            // Optimize stream for real-time reading
+            stream_set_blocking($stream, true);
+            stream_set_read_buffer($stream, 0);
 
             $handler = new SSEHandler();
             foreach ($handler->parseStream($stream) as $event) {
