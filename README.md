@@ -264,6 +264,63 @@ $navi->conversations->chat($conversationId, 'What is the status of my order?',
 );
 ```
 
+#### With Runtime Parameters
+
+Runtime parameters are dynamic values that can be injected at execution time and referenced
+in agent configurations using `${params.key}` syntax. Use them for user tokens, API keys,
+and other per-execution values:
+
+```php
+$navi->conversations->chat($conversationId, 'Get my account balance',
+    function($event) { /* ... */ },
+    [
+        'runtimeParams' => [
+            'user_token' => 'jwt-abc123xyz',      // Used in: ${params.user_token}
+            'api_key' => 'sk-secret-key',         // Used in: ${params.api_key}
+            'user_id' => 42,                      // Used in: ${params.user_id}
+            'organization_id' => 'org-123'        // Used in: ${params.organization_id}
+        ]
+    ]
+);
+```
+
+**Where runtime parameters can be used in agent configuration:**
+
+- MCP server headers: `Authorization: Bearer ${params.user_token}`
+- HTTP request headers: `X-API-Key: ${params.api_key}`
+- Custom functions: `tools.getParam('user_id')`
+- Agent instructions: `You are helping user ${params.user_id}`
+
+**Built-in parameters (automatically available):**
+
+| Parameter | Description |
+|-----------|-------------|
+| `params.current_date` | Current date (YYYY-MM-DD) |
+| `params.current_datetime` | Full ISO datetime |
+| `params.current_timestamp` | Unix timestamp in ms |
+| `params.execution_id` | Unique execution identifier |
+
+Example combining context and runtime parameters:
+
+```php
+$navi->conversations->chat($conversationId, 'Check my order status',
+    function($event) {
+        if ($event->isTextDelta()) {
+            echo $event->getText();
+        }
+    },
+    [
+        'context' => [
+            'orderId' => '12345'
+        ],
+        'runtimeParams' => [
+            'user_token' => $_SESSION['user_token'],
+            'user_id' => $_SESSION['user_id']
+        ]
+    ]
+);
+```
+
 ## Stream Events
 
 | Event | Description | Data |

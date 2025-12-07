@@ -92,7 +92,22 @@ class Conversations
      * Send a message and receive streaming response via callback.
      *
      * @param callable(StreamEvent): void $callback Called for each stream event
-     * @param array{context?: array<string, mixed>} $options
+     * @param array{
+     *     context?: array<string, mixed>,
+     *     runtimeParams?: array<string, mixed>
+     * } $options
+     *
+     * Runtime parameters are dynamic values that can be injected at execution time
+     * and referenced in agent configurations using ${params.key} syntax:
+     * - In MCP headers: `Authorization: Bearer ${params.user_token}`
+     * - In HTTP headers: `X-API-Key: ${params.api_key}`
+     * - In custom functions: `tools.getParam('user_id')`
+     *
+     * Built-in parameters (automatically available):
+     * - params.current_date: Current date (YYYY-MM-DD)
+     * - params.current_datetime: Full ISO datetime
+     * - params.current_timestamp: Unix timestamp in ms
+     * - params.execution_id: Unique execution identifier
      */
     public function chat(
         string $conversationId,
@@ -103,6 +118,9 @@ class Conversations
         $body = ['message' => $message];
         if (isset($options['context'])) {
             $body['context'] = $options['context'];
+        }
+        if (isset($options['runtimeParams'])) {
+            $body['runtimeParams'] = $options['runtimeParams'];
         }
 
         $url = $this->baseUrl . "/conversations/{$conversationId}/chat";
@@ -140,7 +158,10 @@ class Conversations
     /**
      * Send a message and receive streaming response as a generator.
      *
-     * @param array{context?: array<string, mixed>} $options
+     * @param array{
+     *     context?: array<string, mixed>,
+     *     runtimeParams?: array<string, mixed>
+     * } $options
      * @return Generator<StreamEvent>
      */
     public function chatStream(
@@ -151,6 +172,9 @@ class Conversations
         $body = ['message' => $message];
         if (isset($options['context'])) {
             $body['context'] = $options['context'];
+        }
+        if (isset($options['runtimeParams'])) {
+            $body['runtimeParams'] = $options['runtimeParams'];
         }
 
         $url = $this->baseUrl . "/conversations/{$conversationId}/chat";
@@ -188,7 +212,10 @@ class Conversations
     /**
      * Send a message and wait for the complete response (non-streaming).
      *
-     * @param array{context?: array<string, mixed>} $options
+     * @param array{
+     *     context?: array<string, mixed>,
+     *     runtimeParams?: array<string, mixed>
+     * } $options
      */
     public function chatSync(
         string $conversationId,
