@@ -22,13 +22,18 @@ class SSEHandler
      */
     public function parseStream($stream): Generator
     {
+        // Disable output buffering for immediate delivery
+        stream_set_read_buffer($stream, 0);
+
         while (!feof($stream)) {
-            $chunk = fread($stream, 8192);
-            if ($chunk === false) {
+            // Use fgets() for line-based reading - SSE is a line protocol
+            // This returns immediately when a newline is received
+            $line = fgets($stream);
+            if ($line === false) {
                 break;
             }
 
-            yield from $this->processChunk($chunk);
+            yield from $this->processChunk($line);
         }
 
         // Process any remaining data in buffer
