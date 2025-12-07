@@ -94,6 +94,7 @@ class SSEHandler
     {
         $lines = explode("\n", $block);
         $eventType = null;
+        $eventId = null;
         $data = '';
 
         foreach ($lines as $line) {
@@ -107,6 +108,8 @@ class SSEHandler
                 $eventType = trim(substr($line, 6));
             } elseif (str_starts_with($line, 'data:')) {
                 $data .= trim(substr($line, 5));
+            } elseif (str_starts_with($line, 'id:')) {
+                $eventId = trim(substr($line, 3));
             }
         }
 
@@ -120,7 +123,7 @@ class SSEHandler
             $decoded = ['raw' => $data];
         }
 
-        return new StreamEvent($eventType, $decoded);
+        return new StreamEvent($eventType, $decoded, $eventId);
     }
 
     /**

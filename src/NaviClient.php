@@ -105,7 +105,7 @@ class NaviClient
                 'headers' => [
                     'Content-Type' => 'application/json',
                     'Accept' => 'application/json',
-                    'User-Agent' => 'Navi-PHP-SDK/1.4.0',
+                    'User-Agent' => 'Navi-PHP-SDK/1.4.1',
                 ],
             ]);
         }

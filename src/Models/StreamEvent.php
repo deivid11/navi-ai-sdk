@@ -27,6 +27,7 @@ class StreamEvent
     public function __construct(
         public readonly string $type,
         public readonly array $data,
+        public readonly ?string $id = null,
     ) {}
 
     /**
