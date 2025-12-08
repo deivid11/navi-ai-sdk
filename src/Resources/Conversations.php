@@ -66,10 +66,14 @@ class Conversations
 
     /**
      * Get a specific conversation with its messages.
+     *
+     * @param array{
+     *     userId?: string
+     * } $params Optional parameters for filtering/authorization
      */
-    public function get(string $conversationId): Conversation
+    public function get(string $conversationId, array $params = []): Conversation
     {
-        $response = $this->request('GET', "/conversations/{$conversationId}");
+        $response = $this->request('GET', "/conversations/{$conversationId}", $params);
         return Conversation::fromArray($response);
     }
 
@@ -77,6 +81,7 @@ class Conversations
      * List messages in a conversation with pagination.
      *
      * @param array{
+     *     userId?: string,
      *     limit?: int,
      *     offset?: int,
      *     order?: 'asc'|'desc'
@@ -93,9 +98,15 @@ class Conversations
      *
      * @param callable(StreamEvent): void $callback Called for each stream event
      * @param array{
+     *     userId?: string,
+     *     userName?: string,
      *     context?: array<string, mixed>,
      *     runtimeParams?: array<string, mixed>
      * } $options
+     *
+     * User identification options:
+     * - userId: Identifier for the end user sending the message. Creates or retrieves a contact.
+     * - userName: Display name for the user. Used when creating new contacts or updating existing ones.
      *
      * Runtime parameters are dynamic values that can be injected at execution time
      * and referenced in agent configurations using ${params.key} syntax:
@@ -116,6 +127,12 @@ class Conversations
         array $options = []
     ): void {
         $body = ['message' => $message];
+        if (isset($options['userId'])) {
+            $body['userId'] = $options['userId'];
+        }
+        if (isset($options['userName'])) {
+            $body['userName'] = $options['userName'];
+        }
         if (isset($options['context'])) {
             $body['context'] = $options['context'];
         }
@@ -169,6 +186,8 @@ class Conversations
      * Send a message and receive streaming response as a generator.
      *
      * @param array{
+     *     userId?: string,
+     *     userName?: string,
      *     context?: array<string, mixed>,
      *     runtimeParams?: array<string, mixed>
      * } $options
@@ -180,6 +199,12 @@ class Conversations
         array $options = []
     ): Generator {
         $body = ['message' => $message];
+        if (isset($options['userId'])) {
+            $body['userId'] = $options['userId'];
+        }
+        if (isset($options['userName'])) {
+            $body['userName'] = $options['userName'];
+        }
         if (isset($options['context'])) {
             $body['context'] = $options['context'];
         }
@@ -233,6 +258,8 @@ class Conversations
      * Send a message and wait for the complete response (non-streaming).
      *
      * @param array{
+     *     userId?: string,
+     *     userName?: string,
      *     context?: array<string, mixed>,
      *     runtimeParams?: array<string, mixed>
      * } $options
@@ -251,10 +278,14 @@ class Conversations
 
     /**
      * Close a conversation.
+     *
+     * @param array{
+     *     userId?: string
+     * } $params Optional parameters for filtering/authorization
      */
-    public function close(string $conversationId): void
+    public function close(string $conversationId, array $params = []): void
     {
-        $this->request('DELETE', "/conversations/{$conversationId}");
+        $this->request('DELETE', "/conversations/{$conversationId}", $params);
     }
 
     /**

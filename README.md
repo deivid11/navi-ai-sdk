@@ -160,10 +160,19 @@ foreach ($conversation->messages as $message) {
 }
 ```
 
+With user filtering (to ensure users only access their own conversations):
+
+```php
+$conversation = $navi->conversations->get('conversation-uuid', [
+    'userId' => 'user-123'  // Only return if conversation belongs to this user
+]);
+```
+
 #### List Messages with Pagination
 
 ```php
 $page = $navi->conversations->messages('conversation-uuid', [
+    'userId' => 'user-123',  // Optional: filter by user for authorization
     'limit' => 20,
     'offset' => 0,
     'order' => 'desc'  // 'asc' (oldest first) or 'desc' (newest first)
@@ -179,6 +188,7 @@ echo "Has more: " . ($page->hasMore ? 'yes' : 'no');
 // Get next page
 if ($page->hasMore) {
     $nextPage = $navi->conversations->messages('conversation-uuid', [
+        'userId' => 'user-123',
         'limit' => 20,
         'offset' => $page->getNextOffset()
     ]);
@@ -189,6 +199,11 @@ if ($page->hasMore) {
 
 ```php
 $navi->conversations->close('conversation-uuid');
+
+// With user filtering for authorization
+$navi->conversations->close('conversation-uuid', [
+    'userId' => 'user-123'  // Only close if conversation belongs to this user
+]);
 ```
 
 ### Chat
@@ -247,6 +262,25 @@ if ($response->success) {
 }
 ```
 
+#### With User Identification
+
+You can specify the user sending the message. This creates or retrieves a contact to associate with the message:
+
+```php
+$navi->conversations->chat($conversationId, 'Hello!',
+    function($event) { /* ... */ },
+    [
+        'userId' => 'user-123',       // Identifier for the end user
+        'userName' => 'John Doe'      // Display name (used for new contacts or updates)
+    ]
+);
+```
+
+This is useful when:
+- Multiple users share the same conversation (e.g., group support)
+- You want to track which user sent each message
+- You need to associate messages with specific contacts in the system
+
 #### With Context
 
 Pass additional context with your message:
@@ -300,7 +334,7 @@ $navi->conversations->chat($conversationId, 'Get my account balance',
 | `params.current_timestamp` | Unix timestamp in ms |
 | `params.execution_id` | Unique execution identifier |
 
-Example combining context and runtime parameters:
+Example combining user identification, context, and runtime parameters:
 
 ```php
 $navi->conversations->chat($conversationId, 'Check my order status',
@@ -310,6 +344,8 @@ $navi->conversations->chat($conversationId, 'Check my order status',
         }
     },
     [
+        'userId' => $_SESSION['user_id'],
+        'userName' => $_SESSION['user_name'],
         'context' => [
             'orderId' => '12345'
         ],
@@ -382,6 +418,10 @@ $navi = new NaviClient('navi_sk_your_api_key', [
     'base_url' => 'https://your-navi-instance.com'
 ]);
 
+// Simulated user session
+$currentUserId = 'customer-456';
+$currentUserName = 'Jane Smith';
+
 try {
     // Check API status
     $status = $navi->status();
@@ -392,8 +432,8 @@ try {
     // Create or get existing conversation
     $conversation = $navi->conversations->create([
         'agentId' => $status->defaultAgentId ?? 'your-agent-uuid',
-        'userId' => 'customer-456',
-        'userName' => 'Jane Smith',
+        'userId' => $currentUserId,
+        'userName' => $currentUserName,
         'title' => 'Product Inquiry'
     ]);
 
@@ -409,16 +449,24 @@ try {
         }
 
         echo "Agent: ";
-        $navi->conversations->chat($conversation->id, $input, function($event) {
-            if ($event->type === 'response_delta') {
-                echo $event->getText();
-            }
-        });
+        $navi->conversations->chat($conversation->id, $input,
+            function($event) {
+                if ($event->type === 'response_delta') {
+                    echo $event->getText();
+                }
+            },
+            [
+                'userId' => $currentUserId,
+                'userName' => $currentUserName
+            ]
+        );
         echo "\n\n";
     }
 
-    // Close conversation
-    $navi->conversations->close($conversation->id);
+    // Close conversation (with user verification)
+    $navi->conversations->close($conversation->id, [
+        'userId' => $currentUserId
+    ]);
     echo "Conversation closed.\n";
 
 } catch (NaviException $e) {
