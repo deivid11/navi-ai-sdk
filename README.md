@@ -168,6 +168,25 @@ $conversation = $navi->conversations->get('conversation-uuid', [
 ]);
 ```
 
+#### Update a Conversation
+
+```php
+$conversation = $navi->conversations->update('conversation-uuid', [
+    'title' => 'Updated Title'
+]);
+
+echo $conversation->title;  // "Updated Title"
+```
+
+With user filtering for authorization:
+
+```php
+$conversation = $navi->conversations->update('conversation-uuid',
+    ['title' => 'New Title'],
+    ['userId' => 'user-123']  // Only update if conversation belongs to this user
+);
+```
+
 #### List Messages with Pagination
 
 ```php

@@ -78,6 +78,26 @@ class Conversations
     }
 
     /**
+     * Update a conversation.
+     *
+     * @param array{
+     *     title?: string
+     * } $data Data to update
+     * @param array{
+     *     userId?: string
+     * } $params Optional parameters for filtering/authorization
+     */
+    public function update(string $conversationId, array $data, array $params = []): Conversation
+    {
+        $url = "/conversations/{$conversationId}";
+        if (!empty($params)) {
+            $url .= '?' . http_build_query($params);
+        }
+        $response = $this->request('PATCH', $url, $data);
+        return Conversation::fromArray($response);
+    }
+
+    /**
      * List messages in a conversation with pagination.
      *
      * @param array{
