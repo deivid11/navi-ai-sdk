@@ -19,7 +19,7 @@ use InvalidArgumentException;
  *
  * // Generate a token for a user
  * $token = $auth->generateUserToken([
- *     'userId' => 'user_123',        // Required
+ *     'contactId' => 'user_123',        // Required
  *     'name' => 'John Doe',          // Optional
  *     'email' => 'john@example.com', // Optional
  *     'context' => [                 // Optional - passed to the agent
@@ -30,7 +30,7 @@ use InvalidArgumentException;
  *
  * // With expiration (1 hour from now)
  * $token = $auth->generateUserToken([
- *     'userId' => 'user_123',
+ *     'contactId' => 'user_123',
  *     'name' => 'John Doe',
  * ], 3600);
  *
@@ -69,7 +69,7 @@ class WidgetAuth
      * and maintain persistent conversations for that user.
      *
      * @param array{
-     *     userId: string,
+     *     contactId: string,
      *     name?: string,
      *     email?: string,
      *     context?: array<string, mixed>
@@ -77,16 +77,16 @@ class WidgetAuth
      * @param int|null $expiresIn Token expiration time in seconds from now (null = no expiration)
      * @return string The signed token (format: base64(payload).hmac_signature)
      *
-     * @throws InvalidArgumentException If userId is missing
+     * @throws InvalidArgumentException If contactId is missing
      *
      * @example
      * ```php
      * // Basic usage
-     * $token = $auth->generateUserToken(['userId' => 'user_123']);
+     * $token = $auth->generateUserToken(['contactId' => 'user_123']);
      *
      * // With full user info
      * $token = $auth->generateUserToken([
-     *     'userId' => 'user_123',
+     *     'contactId' => 'user_123',
      *     'name' => 'John Doe',
      *     'email' => 'john@example.com',
      *     'context' => ['plan' => 'premium'],
@@ -96,17 +96,17 @@ class WidgetAuth
     public function generateUserToken(array $userData, ?int $expiresIn = null): string
     {
         // Validate required fields
-        if (empty($userData['userId'])) {
-            throw new InvalidArgumentException('userId is required in user data');
+        if (empty($userData['contactId'])) {
+            throw new InvalidArgumentException('contactId is required in user data');
         }
 
-        if (!is_string($userData['userId'])) {
-            throw new InvalidArgumentException('userId must be a string');
+        if (!is_string($userData['contactId'])) {
+            throw new InvalidArgumentException('contactId must be a string');
         }
 
         // Build payload
         $payload = [
-            'userId' => $userData['userId'],
+            'contactId' => $userData['contactId'],
         ];
 
         // Add optional fields
@@ -147,7 +147,7 @@ class WidgetAuth
      * ```php
      * $result = $auth->verifyUserToken($token);
      * if ($result['valid']) {
-     *     echo 'Token is valid for user: ' . $result['payload']['userId'];
+     *     echo 'Token is valid for user: ' . $result['payload']['contactId'];
      * } else {
      *     echo 'Token invalid: ' . $result['error'];
      * }

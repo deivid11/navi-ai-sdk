@@ -40,7 +40,7 @@ $navi = new NaviClient('navi_sk_your_api_key', [
 // Create a conversation
 $conversation = $navi->conversations->create([
     'agentId' => 'your-agent-uuid',
-    'userId' => 'user-123',
+    'contactId' => 'contact-123',
     'title' => 'Support Request'
 ]);
 
@@ -117,8 +117,8 @@ echo $agent->isDefault ? 'Default agent' : 'Not default';
 ```php
 $conversation = $navi->conversations->create([
     'agentId' => 'agent-uuid',        // Required
-    'userId' => 'user-123',           // Optional: identify the end user
-    'userName' => 'John Doe',         // Optional: display name
+    'contactId' => 'contact-123',         // Optional: identify the contact
+    'contactName' => 'John Doe',         // Optional: display name
     'title' => 'Order Inquiry',       // Optional: conversation title
     'context' => [                    // Optional: additional context
         'orderId' => '12345',
@@ -134,7 +134,7 @@ echo $conversation->status;           // "active"
 
 ```php
 $conversations = $navi->conversations->list([
-    'userId' => 'user-123',           // Optional: filter by user
+    'contactId' => 'contact-123',         // Optional: filter by contact
     'status' => 'active',             // Optional: "active", "closed", "archived"
     'limit' => 20,                    // Optional: max results (default: 50)
     'offset' => 0                     // Optional: pagination offset
@@ -160,11 +160,11 @@ foreach ($conversation->messages as $message) {
 }
 ```
 
-With user filtering (to ensure users only access their own conversations):
+With contact filtering (to ensure contacts only access their own conversations):
 
 ```php
 $conversation = $navi->conversations->get('conversation-uuid', [
-    'userId' => 'user-123'  // Only return if conversation belongs to this user
+    'contactId' => 'contact-123'  // Only return if conversation belongs to this contact
 ]);
 ```
 
@@ -178,12 +178,12 @@ $conversation = $navi->conversations->update('conversation-uuid', [
 echo $conversation->title;  // "Updated Title"
 ```
 
-With user filtering for authorization:
+With contact filtering for authorization:
 
 ```php
 $conversation = $navi->conversations->update('conversation-uuid',
     ['title' => 'New Title'],
-    ['userId' => 'user-123']  // Only update if conversation belongs to this user
+    ['contactId' => 'contact-123']  // Only update if conversation belongs to this contact
 );
 ```
 
@@ -191,7 +191,7 @@ $conversation = $navi->conversations->update('conversation-uuid',
 
 ```php
 $page = $navi->conversations->messages('conversation-uuid', [
-    'userId' => 'user-123',  // Optional: filter by user for authorization
+    'contactId' => 'contact-123',  // Optional: filter by contact for authorization
     'limit' => 20,
     'offset' => 0,
     'order' => 'desc'  // 'asc' (oldest first) or 'desc' (newest first)
@@ -207,7 +207,7 @@ echo "Has more: " . ($page->hasMore ? 'yes' : 'no');
 // Get next page
 if ($page->hasMore) {
     $nextPage = $navi->conversations->messages('conversation-uuid', [
-        'userId' => 'user-123',
+        'contactId' => 'contact-123',
         'limit' => 20,
         'offset' => $page->getNextOffset()
     ]);
@@ -219,9 +219,9 @@ if ($page->hasMore) {
 ```php
 $navi->conversations->close('conversation-uuid');
 
-// With user filtering for authorization
+// With contact filtering for authorization
 $navi->conversations->close('conversation-uuid', [
-    'userId' => 'user-123'  // Only close if conversation belongs to this user
+    'contactId' => 'contact-123'  // Only close if conversation belongs to this contact
 ]);
 ```
 
@@ -281,23 +281,23 @@ if ($response->success) {
 }
 ```
 
-#### With User Identification
+#### With Contact Identification
 
-You can specify the user sending the message. This creates or retrieves a contact to associate with the message:
+You can specify the contact sending the message. This creates or retrieves a contact to associate with the message:
 
 ```php
 $navi->conversations->chat($conversationId, 'Hello!',
     function($event) { /* ... */ },
     [
-        'userId' => 'user-123',       // Identifier for the end user
-        'userName' => 'John Doe'      // Display name (used for new contacts or updates)
+        'contactId' => 'contact-123',       // Identifier for the contact
+        'contactName' => 'John Doe'         // Display name (used for new contacts or updates)
     ]
 );
 ```
 
 This is useful when:
-- Multiple users share the same conversation (e.g., group support)
-- You want to track which user sent each message
+- Multiple contacts share the same conversation (e.g., group support)
+- You want to track which contact sent each message
 - You need to associate messages with specific contacts in the system
 
 #### With Context
@@ -353,7 +353,7 @@ $navi->conversations->chat($conversationId, 'Get my account balance',
 | `params.current_timestamp` | Unix timestamp in ms |
 | `params.execution_id` | Unique execution identifier |
 
-Example combining user identification, context, and runtime parameters:
+Example combining contact identification, context, and runtime parameters:
 
 ```php
 $navi->conversations->chat($conversationId, 'Check my order status',
@@ -363,8 +363,8 @@ $navi->conversations->chat($conversationId, 'Check my order status',
         }
     },
     [
-        'userId' => $_SESSION['user_id'],
-        'userName' => $_SESSION['user_name'],
+        'contactId' => $_SESSION['user_id'],
+        'contactName' => $_SESSION['user_name'],
         'context' => [
             'orderId' => '12345'
         ],
@@ -437,9 +437,9 @@ $navi = new NaviClient('navi_sk_your_api_key', [
     'base_url' => 'https://your-navi-instance.com'
 ]);
 
-// Simulated user session
-$currentUserId = 'customer-456';
-$currentUserName = 'Jane Smith';
+// Simulated contact session
+$currentContactId = 'customer-456';
+$currentContactName = 'Jane Smith';
 
 try {
     // Check API status
@@ -451,8 +451,8 @@ try {
     // Create or get existing conversation
     $conversation = $navi->conversations->create([
         'agentId' => $status->defaultAgentId ?? 'your-agent-uuid',
-        'userId' => $currentUserId,
-        'userName' => $currentUserName,
+        'contactId' => $currentContactId,
+        'contactName' => $currentContactName,
         'title' => 'Product Inquiry'
     ]);
 
@@ -475,16 +475,16 @@ try {
                 }
             },
             [
-                'userId' => $currentUserId,
-                'userName' => $currentUserName
+                'contactId' => $currentContactId,
+                'contactName' => $currentContactName
             ]
         );
         echo "\n\n";
     }
 
-    // Close conversation (with user verification)
+    // Close conversation (with contact verification)
     $navi->conversations->close($conversation->id, [
-        'userId' => $currentUserId
+        'contactId' => $currentContactId
     ]);
     echo "Conversation closed.\n";
 

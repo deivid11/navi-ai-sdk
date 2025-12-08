@@ -31,8 +31,8 @@ class Conversations
      *
      * @param array{
      *     agentId: string,
-     *     userId?: string,
-     *     userName?: string,
+     *     contactId?: string,
+     *     contactName?: string,
      *     title?: string,
      *     message?: string,
      *     context?: array<string, mixed>
@@ -48,7 +48,7 @@ class Conversations
      * List conversations.
      *
      * @param array{
-     *     userId?: string,
+     *     contactId?: string,
      *     status?: string,
      *     limit?: int,
      *     offset?: int
@@ -68,7 +68,7 @@ class Conversations
      * Get a specific conversation with its messages.
      *
      * @param array{
-     *     userId?: string
+     *     contactId?: string
      * } $params Optional parameters for filtering/authorization
      */
     public function get(string $conversationId, array $params = []): Conversation
@@ -84,7 +84,7 @@ class Conversations
      *     title?: string
      * } $data Data to update
      * @param array{
-     *     userId?: string
+     *     contactId?: string
      * } $params Optional parameters for filtering/authorization
      */
     public function update(string $conversationId, array $data, array $params = []): Conversation
@@ -101,7 +101,7 @@ class Conversations
      * List messages in a conversation with pagination.
      *
      * @param array{
-     *     userId?: string,
+     *     contactId?: string,
      *     limit?: int,
      *     offset?: int,
      *     order?: 'asc'|'desc'
@@ -118,15 +118,15 @@ class Conversations
      *
      * @param callable(StreamEvent): void $callback Called for each stream event
      * @param array{
-     *     userId?: string,
-     *     userName?: string,
+     *     contactId?: string,
+     *     contactName?: string,
      *     context?: array<string, mixed>,
      *     runtimeParams?: array<string, mixed>
      * } $options
      *
-     * User identification options:
-     * - userId: Identifier for the end user sending the message. Creates or retrieves a contact.
-     * - userName: Display name for the user. Used when creating new contacts or updating existing ones.
+     * Contact identification options:
+     * - contactId: Identifier for the contact sending the message. Creates or retrieves a contact.
+     * - contactName: Display name for the contact. Used when creating new contacts or updating existing ones.
      *
      * Runtime parameters are dynamic values that can be injected at execution time
      * and referenced in agent configurations using ${params.key} syntax:
@@ -147,11 +147,11 @@ class Conversations
         array $options = []
     ): void {
         $body = ['message' => $message];
-        if (isset($options['userId'])) {
-            $body['userId'] = $options['userId'];
+        if (isset($options['contactId'])) {
+            $body['contactId'] = $options['contactId'];
         }
-        if (isset($options['userName'])) {
-            $body['userName'] = $options['userName'];
+        if (isset($options['contactName'])) {
+            $body['contactName'] = $options['contactName'];
         }
         if (isset($options['context'])) {
             $body['context'] = $options['context'];
@@ -206,8 +206,8 @@ class Conversations
      * Send a message and receive streaming response as a generator.
      *
      * @param array{
-     *     userId?: string,
-     *     userName?: string,
+     *     contactId?: string,
+     *     contactName?: string,
      *     context?: array<string, mixed>,
      *     runtimeParams?: array<string, mixed>
      * } $options
@@ -219,11 +219,11 @@ class Conversations
         array $options = []
     ): Generator {
         $body = ['message' => $message];
-        if (isset($options['userId'])) {
-            $body['userId'] = $options['userId'];
+        if (isset($options['contactId'])) {
+            $body['contactId'] = $options['contactId'];
         }
-        if (isset($options['userName'])) {
-            $body['userName'] = $options['userName'];
+        if (isset($options['contactName'])) {
+            $body['contactName'] = $options['contactName'];
         }
         if (isset($options['context'])) {
             $body['context'] = $options['context'];
@@ -278,8 +278,8 @@ class Conversations
      * Send a message and wait for the complete response (non-streaming).
      *
      * @param array{
-     *     userId?: string,
-     *     userName?: string,
+     *     contactId?: string,
+     *     contactName?: string,
      *     context?: array<string, mixed>,
      *     runtimeParams?: array<string, mixed>
      * } $options
@@ -300,7 +300,7 @@ class Conversations
      * Close a conversation.
      *
      * @param array{
-     *     userId?: string
+     *     contactId?: string
      * } $params Optional parameters for filtering/authorization
      */
     public function close(string $conversationId, array $params = []): void
