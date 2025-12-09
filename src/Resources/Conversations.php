@@ -33,10 +33,15 @@ class Conversations
      *     agentId: string,
      *     contactId?: string,
      *     contactName?: string,
+     *     contactMetadata?: array<string, string|int|float|bool|null>,
      *     title?: string,
      *     message?: string,
      *     context?: array<string, mixed>
      * } $params
+     *
+     * Contact metadata is a flat key-value object for storing additional contact information.
+     * It can be used to search for contacts later using JSONB queries.
+     * Example: ['customerId' => 'CUS-123', 'tier' => 'premium', 'region' => 'us-east']
      */
     public function create(array $params): Conversation
     {
@@ -120,6 +125,7 @@ class Conversations
      * @param array{
      *     contactId?: string,
      *     contactName?: string,
+     *     contactMetadata?: array<string, string|int|float|bool|null>,
      *     context?: array<string, mixed>,
      *     runtimeParams?: array<string, mixed>
      * } $options
@@ -127,6 +133,7 @@ class Conversations
      * Contact identification options:
      * - contactId: Identifier for the contact sending the message. Creates or retrieves a contact.
      * - contactName: Display name for the contact. Used when creating new contacts or updating existing ones.
+     * - contactMetadata: Flat key-value pairs for additional contact information (e.g., ['customerId' => 'CUS-123']).
      *
      * Runtime parameters are dynamic values that can be injected at execution time
      * and referenced in agent configurations using ${params.key} syntax:
@@ -152,6 +159,9 @@ class Conversations
         }
         if (isset($options['contactName'])) {
             $body['contactName'] = $options['contactName'];
+        }
+        if (isset($options['contactMetadata'])) {
+            $body['contactMetadata'] = $options['contactMetadata'];
         }
         if (isset($options['context'])) {
             $body['context'] = $options['context'];
@@ -208,6 +218,7 @@ class Conversations
      * @param array{
      *     contactId?: string,
      *     contactName?: string,
+     *     contactMetadata?: array<string, string|int|float|bool|null>,
      *     context?: array<string, mixed>,
      *     runtimeParams?: array<string, mixed>
      * } $options
@@ -224,6 +235,9 @@ class Conversations
         }
         if (isset($options['contactName'])) {
             $body['contactName'] = $options['contactName'];
+        }
+        if (isset($options['contactMetadata'])) {
+            $body['contactMetadata'] = $options['contactMetadata'];
         }
         if (isset($options['context'])) {
             $body['context'] = $options['context'];
@@ -280,6 +294,7 @@ class Conversations
      * @param array{
      *     contactId?: string,
      *     contactName?: string,
+     *     contactMetadata?: array<string, string|int|float|bool|null>,
      *     context?: array<string, mixed>,
      *     runtimeParams?: array<string, mixed>
      * } $options

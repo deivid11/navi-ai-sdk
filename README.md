@@ -117,8 +117,13 @@ echo $agent->isDefault ? 'Default agent' : 'Not default';
 ```php
 $conversation = $navi->conversations->create([
     'agentId' => 'agent-uuid',        // Required
-    'contactId' => 'contact-123',         // Optional: identify the contact
-    'contactName' => 'John Doe',         // Optional: display name
+    'contactId' => 'contact-123',     // Optional: identify the contact
+    'contactName' => 'John Doe',      // Optional: display name
+    'contactMetadata' => [            // Optional: custom metadata (flat key-value pairs)
+        'customerId' => 'CUS-123',
+        'tier' => 'premium',
+        'region' => 'us-east'
+    ],
     'title' => 'Order Inquiry',       // Optional: conversation title
     'context' => [                    // Optional: additional context
         'orderId' => '12345',
@@ -129,6 +134,8 @@ $conversation = $navi->conversations->create([
 echo $conversation->id;               // Conversation UUID
 echo $conversation->status;           // "active"
 ```
+
+**Contact Metadata:** Flat key-value pairs stored with the contact for additional information and search capabilities. Values can be strings, numbers, booleans, or null. Metadata is merged on updates (new values override existing).
 
 #### List Conversations
 
@@ -290,7 +297,11 @@ $navi->conversations->chat($conversationId, 'Hello!',
     function($event) { /* ... */ },
     [
         'contactId' => 'contact-123',       // Identifier for the contact
-        'contactName' => 'John Doe'         // Display name (used for new contacts or updates)
+        'contactName' => 'John Doe',        // Display name (used for new contacts or updates)
+        'contactMetadata' => [              // Custom metadata (flat key-value pairs)
+            'customerId' => 'CUS-123',
+            'tier' => 'premium'
+        ]
     ]
 );
 ```
@@ -299,6 +310,7 @@ This is useful when:
 - Multiple contacts share the same conversation (e.g., group support)
 - You want to track which contact sent each message
 - You need to associate messages with specific contacts in the system
+- You want to store searchable metadata with contacts
 
 #### With Context
 
@@ -353,7 +365,7 @@ $navi->conversations->chat($conversationId, 'Get my account balance',
 | `params.current_timestamp` | Unix timestamp in ms |
 | `params.execution_id` | Unique execution identifier |
 
-Example combining contact identification, context, and runtime parameters:
+Example combining contact identification, metadata, context, and runtime parameters:
 
 ```php
 $navi->conversations->chat($conversationId, 'Check my order status',
@@ -365,6 +377,10 @@ $navi->conversations->chat($conversationId, 'Check my order status',
     [
         'contactId' => $_SESSION['user_id'],
         'contactName' => $_SESSION['user_name'],
+        'contactMetadata' => [
+            'customerId' => $_SESSION['customer_id'],
+            'tier' => $_SESSION['subscription_tier']
+        ],
         'context' => [
             'orderId' => '12345'
         ],

@@ -1,6 +1,6 @@
 {
     "name": "navi-ai/php-sdk",
-    "version": "1.7.0",
+    "version": "1.8.0",
     "description": "Official PHP SDK for Navi AI Agent Platform - Build AI-powered conversations with ease",
     "type": "library",
     "license": "MIT",
